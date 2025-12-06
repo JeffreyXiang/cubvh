@@ -53,6 +53,7 @@ private:
 };
 
 using FixedIntStack = FixedStack<int>;
+using FixedIntStackLarge = FixedStack<int, 64>;
 
 
 class TriangleBvh {
