@@ -12,6 +12,7 @@ using namespace Eigen;
 using Verts = Matrix<float, Dynamic, 3, RowMajor>;
 using Trigs = Matrix<uint32_t, Dynamic, 3, RowMajor>;
 
+namespace cumesh {
 namespace cubvh {
 
 class cuBVHImpl : public cuBVH {
@@ -224,3 +225,4 @@ cuHashTable* create_cuHashTable() {
 }
 
 } // namespace cubvh
+} // namespace cumesh

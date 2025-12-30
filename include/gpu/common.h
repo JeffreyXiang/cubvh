@@ -13,6 +13,7 @@
 
 #include <Eigen/Dense>
 
+namespace cumesh {
 namespace cubvh {
 
 static constexpr float PI = 3.14159265358979323846f;
@@ -105,4 +106,5 @@ inline __host__ __device__ float safe_divide(float numerator, float denominator,
 	return numerator / denominator;
 }
 
-}
+} // namespace cubvh
+} // namespace cumesh

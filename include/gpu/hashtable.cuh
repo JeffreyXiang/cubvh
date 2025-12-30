@@ -3,6 +3,7 @@
 #include <gpu/common.h>
 #include <gpu/gpu_memory.h>
 
+namespace cumesh {
 namespace cubvh {
 
 // --- N-dim integer static hash table ---
@@ -216,3 +217,4 @@ struct HashTableInt {
 };
 
 } // namespace cubvh
+} // namespace cumesh

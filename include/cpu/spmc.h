@@ -11,6 +11,7 @@
 // CPU implementation of the same sparse marching cubes algorithm
 // as include/cubvh/spcumc.cuh, but using standard C++ containers.
 
+namespace cumesh {
 namespace cubvh {
 namespace cpu {
 
@@ -467,3 +468,4 @@ sparse_marching_cubes(const int* coords, const float* corners, int N, float iso,
 
 } // namespace cpu
 } // namespace cubvh
+} // namespace cumesh

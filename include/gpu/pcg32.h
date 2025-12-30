@@ -37,7 +37,7 @@
 #include <cmath>
 #include <cassert>
 
-
+namespace cumesh {
 namespace cubvh {
 
 /// PCG32 Pseudorandom number generator
@@ -204,4 +204,5 @@ struct pcg32 {
 	uint64_t inc;    // Controls which RNG sequence (stream) is selected. Must *always* be odd.
 };
 
-}
+} // namespace cubvh
+} // namespace cumesh

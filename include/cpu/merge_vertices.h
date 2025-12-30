@@ -11,6 +11,7 @@
 
 #include <Eigen/Dense>
 
+namespace cumesh {
 namespace cubvh {
 namespace cpu {
 
@@ -125,3 +126,4 @@ inline void merge_vertices(
 
 } // namespace cpu
 } // namespace cubvh
+} // namespace cumesh

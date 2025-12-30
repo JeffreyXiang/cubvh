@@ -13,6 +13,7 @@
 
 #include <Eigen/Dense>
 
+namespace cumesh {
 namespace cubvh {
 namespace cpu {
 namespace qd {
@@ -694,3 +695,4 @@ using Decimator = Decimatord;
 } // namespace qd
 } // namespace cpu
 } // namespace cubvh
+} // namespace cumesh

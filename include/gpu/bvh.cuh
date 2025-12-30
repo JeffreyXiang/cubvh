@@ -7,6 +7,7 @@
 
 #include <memory>
 
+namespace cumesh {
 namespace cubvh {
 
 struct TriangleBvhNode {
@@ -82,4 +83,5 @@ public:
 
 };
 
-}
+} // namespace cubvh
+} // namespace cumesh

@@ -47,6 +47,7 @@
     } while(0)
 
 
+namespace cumesh {
 namespace cubvh {
 
 #define DEBUG_GUARD_SIZE 0
@@ -389,4 +390,5 @@ public:
     }
 };
 
-}
+} // namespace cubvh
+} // namespace cumesh

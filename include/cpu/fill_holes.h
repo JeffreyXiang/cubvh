@@ -11,6 +11,7 @@
 
 #include <Eigen/Dense>
 
+namespace cumesh {
 namespace cubvh {
 namespace cpu {
 
@@ -428,3 +429,4 @@ inline std::vector<Vec3i> fill_holes(const std::vector<Vec3f>& V,
 
 } // namespace cpu
 } // namespace cubvh
+} // namespace cumesh

@@ -11,6 +11,7 @@ using namespace Eigen;
 using Verts = Matrix<float, Dynamic, 3, RowMajor>;
 using Trigs = Matrix<uint32_t, Dynamic, 3, RowMajor>;
 
+namespace cumesh {
 namespace cubvh {
 
 // abstract class of raytracer
@@ -50,3 +51,4 @@ public:
 cuHashTable* create_cuHashTable();
 
 } // namespace cubvh
+} // namespace cumesh

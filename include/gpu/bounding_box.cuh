@@ -3,6 +3,7 @@
 #include <gpu/common.h>
 #include <gpu/triangle.cuh>
 
+namespace cumesh {
 namespace cubvh {
 
 template <int N_POINTS>
@@ -243,4 +244,5 @@ inline std::ostream& operator<< (std::ostream& os, const cubvh::BoundingBox& bb)
     return os;
 }
 
-}
+} // namespace cubvh
+} // namespace cumesh

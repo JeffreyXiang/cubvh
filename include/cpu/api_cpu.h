@@ -15,6 +15,7 @@
 
 namespace py = pybind11;
 
+namespace cumesh {
 namespace cubvh {
 
 static py::array_t<int> fill_holes(
@@ -322,3 +323,4 @@ private:
 };
 
 } // namespace cubvh
+} // namespace cumesh

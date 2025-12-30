@@ -2,6 +2,7 @@
 
 #include <gpu/common.h>
 
+namespace cumesh {
 namespace cubvh {
 
 // Triangle data structure
@@ -186,4 +187,5 @@ inline std::ostream& operator<<(std::ostream& os, const Triangle& triangle) {
 }
 
 
-}
+} // namespace cubvh
+} // namespace cumesh

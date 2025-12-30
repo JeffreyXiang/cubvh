@@ -9,9 +9,9 @@
 #include <cstdio>
 
 using namespace Eigen;
-using namespace cubvh;
 
 
+namespace cumesh {
 namespace cubvh {
 
 constexpr float MAX_DIST = 1000.0f;
@@ -723,4 +723,5 @@ __global__ void raytrace_kernel(
     }
 }
     
-}
+} // namespace cubvh
+} // namespace cumesh

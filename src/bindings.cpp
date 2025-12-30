@@ -9,7 +9,7 @@
 
 
 namespace py = pybind11;
-using namespace cubvh;
+using namespace cumesh::cubvh;
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 

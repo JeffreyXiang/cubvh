@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 
+namespace cumesh {
 namespace cubvh {
 
 // --- N-dim integer static hash table (CPU) ---
@@ -149,5 +150,4 @@ struct HashTableIntCPU {
 };
 
 } // namespace cubvh
-
-
+} // namespace cumesh
