@@ -80,6 +80,20 @@ public:
         triangle_bvh->ray_trace_gpu(n_elements, rays_o.data_ptr<float>(), rays_d.data_ptr<float>(), positions.data_ptr<float>(), face_id.data_ptr<int64_t>(), depth.data_ptr<float>(), triangles_gpu.data(), stream);
     }
 
+    void closest_point(at::Tensor points, at::Tensor closest_points) {
+
+        const uint32_t n_elements = points.size(0);
+        cudaStream_t stream = at::cuda::getCurrentCUDAStream();
+
+        // Lazy init gpu memory
+        if (triangles_gpu.data() == nullptr) {
+            triangles_gpu.resize_and_copy_from_host(triangles_cpu);
+        }
+
+        triangle_bvh->closest_point_gpu(n_elements, points.data_ptr<float>(), closest_points.data_ptr<float>(), triangles_gpu.data(), stream);
+
+    }
+
     void unsigned_distance(at::Tensor positions, at::Tensor distances, at::Tensor face_id, at::optional<at::Tensor> uvw) {
 
         const uint32_t n_elements = positions.size(0);

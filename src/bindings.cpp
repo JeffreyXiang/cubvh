@@ -16,6 +16,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 // CUDA API
 py::class_<cuBVH>(m, "cuBVH")
     .def("ray_trace", &cuBVH::ray_trace)
+    .def("closest_point", &cuBVH::closest_point)
     .def("unsigned_distance", &cuBVH::unsigned_distance)
     .def("signed_distance", &cuBVH::signed_distance)
     .def("state_dict", &cuBVH::state_dict);

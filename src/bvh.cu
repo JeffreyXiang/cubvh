@@ -17,6 +17,7 @@ namespace cubvh {
 constexpr float MAX_DIST = 1000.0f;
 constexpr float MAX_DIST_SQ = MAX_DIST*MAX_DIST;
 
+__global__ void closest_point_kernel(uint32_t n_elements, const Vector3f* __restrict__ positions, Vector3f* __restrict__ closest_points, const TriangleBvhNode* __restrict__ bvhnodes, const Triangle* __restrict__ triangles);
 __global__ void signed_distance_watertight_kernel(uint32_t n_elements, const Vector3f* __restrict__ positions, float* __restrict__ distances, int64_t* __restrict__ face_id, Vector3f* __restrict__ uvw, const TriangleBvhNode* __restrict__ bvhnodes, const Triangle* __restrict__ triangles, bool use_existing_distances_as_upper_bounds);
 __global__ void signed_distance_raystab_kernel(uint32_t n_elements, const Vector3f* __restrict__ positions, float* __restrict__ distances, int64_t* __restrict__ face_id, Vector3f* __restrict__ uvw, const TriangleBvhNode* __restrict__ bvhnodes, const Triangle* __restrict__ triangles, bool use_existing_distances_as_upper_bounds);
 __global__ void unsigned_distance_kernel(uint32_t n_elements, const Vector3f* __restrict__ positions, float* __restrict__ distances, int64_t* __restrict__ face_id, Vector3f* __restrict__ uvw, const TriangleBvhNode* __restrict__ bvhnodes, const Triangle* __restrict__ triangles, bool use_existing_distances_as_upper_bounds);
@@ -427,6 +428,26 @@ public:
     }
 
 
+    void closest_point_gpu(uint32_t n_elements, const float* positions, float* closest_points, const Triangle* gpu_triangles, cudaStream_t stream) override {
+
+        const Vector3f* positions_vec = (const Vector3f*)positions;
+        Vector3f* closest_points_vec = (Vector3f*)closest_points;
+
+        // lazy init gpu memory
+        if (m_nodes_gpu.data() == nullptr) {
+            m_nodes_gpu.resize_and_copy_from_host(m_nodes);
+        }
+
+        linear_kernel(closest_point_kernel, 0u, stream,
+            n_elements,
+            positions_vec,
+            closest_points_vec,
+            m_nodes_gpu.data(),
+            gpu_triangles
+        );
+    }
+
+
     void signed_distance_gpu(uint32_t n_elements, uint32_t mode, const float* positions, float* distances, int64_t* face_id, float* uvw, const Triangle* gpu_triangles, cudaStream_t stream) override {
 
         const Vector3f* positions_vec = (const Vector3f*)positions;
@@ -626,6 +647,21 @@ using TriangleBvh4 = TriangleBvhWithBranchingFactor<4>;
 
 std::unique_ptr<TriangleBvh> TriangleBvh::make() {
     return std::unique_ptr<TriangleBvh>(new TriangleBvh4());
+}
+
+__global__ void closest_point_kernel(
+    uint32_t n_elements, const Vector3f* __restrict__ positions,
+    Vector3f* __restrict__ closest_points,
+    const TriangleBvhNode* __restrict__ bvhnodes, const Triangle* __restrict__ triangles
+) {
+    uint32_t i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i >= n_elements) return;
+
+    Vector3f point = positions[i];
+
+    auto res = TriangleBvh4::closest_triangle(point, bvhnodes, triangles, MAX_DIST*MAX_DIST);
+    Vector3f cpoint = triangles[res.first].closest_point(point);
+    closest_points[i] = cpoint;
 }
 
 __global__ void signed_distance_watertight_kernel(

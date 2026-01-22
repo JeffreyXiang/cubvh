@@ -63,6 +63,24 @@ class cuBVH():
         depth = depth.view(*prefix)
 
         return positions, face_id, depth
+    
+    def closest_point(self, positions):
+        # positions: torch.Tensor, float, [N, 3]
+
+        positions = positions.float().contiguous()
+
+        if not positions.is_cuda: positions = positions.cuda()
+
+        prefix = positions.shape[:-1]
+        positions = positions.view(-1, 3)
+
+        N = positions.shape[0]
+
+        closest_points = torch.empty(N, 3, dtype=torch.float32, device=positions.device)
+        self.impl.closest_point(positions, closest_points) # [N, 3]
+        closest_points = closest_points.view(*prefix, 3)
+        return closest_points
+
 
     def unsigned_distance(self, positions, return_uvw=False):
         # positions: torch.Tensor, float, [N, 3]
