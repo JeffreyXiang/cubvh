@@ -44,98 +44,83 @@ struct Triangle {
     }
 
     __host__ __device__ float distance_sq(const Eigen::Vector3f& pos) const {
-        // prepare data
         Eigen::Vector3f v21 = b - a; Eigen::Vector3f p1 = pos - a;
         Eigen::Vector3f v32 = c - b; Eigen::Vector3f p2 = pos - b;
         Eigen::Vector3f v13 = a - c; Eigen::Vector3f p3 = pos - c;
         Eigen::Vector3f nor = v21.cross(v13);
+        float nor_sq = nor.squaredNorm();
+        bool is_degenerate = nor_sq < 1e-24f;
+        bool is_inside =
+            (v21.cross(nor).dot(p1)) >= 0.0f &&
+            (v32.cross(nor).dot(p2)) >= 0.0f &&
+            (v13.cross(nor).dot(p3)) >= 0.0f;
 
-        return
-            // inside/outside test
-            (sign(v21.cross(nor).dot(p1)) + sign(v32.cross(nor).dot(p2)) + sign(v13.cross(nor).dot(p3)) < 2.0f)
-            ?
+        if (!is_inside || is_degenerate) {
             // 3 edges
-            std::min(
+            return std::min(
                 std::min(
                     (v21 * clamp(v21.dot(p1) / v21.squaredNorm(), 0.0f, 1.0f)-p1).squaredNorm(),
                     (v32 * clamp(v32.dot(p2) / v32.squaredNorm(), 0.0f, 1.0f)-p2).squaredNorm()
                 ),
                 (v13 * clamp(v13.dot(p3) / v13.squaredNorm(), 0.0f, 1.0f)-p3).squaredNorm()
-            )
-            :
+            );
+        }
+        else {
             // 1 face
-            nor.dot(p1)*nor.dot(p1)/nor.squaredNorm();
+            return nor.dot(p1)*nor.dot(p1)/nor_sq;
+        }
     }
 
     __host__ __device__ float distance(const Eigen::Vector3f& pos) const {
         return std::sqrt(distance_sq(pos));
     }
 
-    __host__ __device__ bool point_in_triangle(const Eigen::Vector3f& p) const {
-        // Move the triangle so that the point becomes the
-        // triangles origin
-        Eigen::Vector3f local_a = a - p;
-        Eigen::Vector3f local_b = b - p;
-        Eigen::Vector3f local_c = c - p;
+    __host__ __device__ Eigen::Vector3f closest_point_to_segment(const Eigen::Vector3f& p, const Eigen::Vector3f& a, const Eigen::Vector3f& b) const {
+        Eigen::Vector3f ab = b - a;
+        float len_sq = ab.squaredNorm();
 
-        // The point should be moved too, so they are both
-        // relative, but because we don't use p in the
-        // equation anymore, we don't need it!
-        // p -= p;
-
-        // Compute the normal vectors for triangles:
-        // u = normal of PBC
-        // v = normal of PCA
-        // w = normal of PAB
-
-        Eigen::Vector3f u = local_b.cross(local_c);
-        Eigen::Vector3f v = local_c.cross(local_a);
-        Eigen::Vector3f w = local_a.cross(local_b);
-
-        // Test to see if the normals are facing
-        // the same direction, return false if not
-        if (u.dot(v) < 0.0f) {
-            return false;
+        if (len_sq < 1e-12f) {
+            return a; 
         }
-        if (u.dot(w) < 0.0f) {
-            return false;
-        }
+        float t = (p - a).dot(ab) / len_sq;
+        
+        if (t < 0.0f) t = 0.0f;
+        else if (t > 1.0f) t = 1.0f;
 
-        // All normals facing the same way, return true
-        return true;
-    }
-
-    __host__ __device__ Eigen::Vector3f closest_point_to_line(const Eigen::Vector3f& a, const Eigen::Vector3f& b, const Eigen::Vector3f& c) const {
-        float t = (c - a).dot(b - a) / (b - a).dot(b - a);
-        t = std::max(std::min(t, 1.0f), 0.0f);
-        return a + t * (b - a);
+        return a + t * ab;
     }
 
     __host__ __device__ Eigen::Vector3f closest_point(Eigen::Vector3f point) const {
-        point -= normal().dot(point - a) * normal();
+        Eigen::Vector3f v21 = b - a; Eigen::Vector3f p1 = point - a;
+        Eigen::Vector3f v32 = c - b; Eigen::Vector3f p2 = point - b;
+        Eigen::Vector3f v13 = a - c; Eigen::Vector3f p3 = point - c;
+        Eigen::Vector3f nor = v21.cross(v13);
+        float nor_sq = nor.squaredNorm();
+        bool is_degenerate = nor_sq < 1e-24f;
+        bool is_inside =
+            (v21.cross(nor).dot(p1)) >= 0.0f &&
+            (v32.cross(nor).dot(p2)) >= 0.0f &&
+            (v13.cross(nor).dot(p3)) >= 0.0f;
 
-        if (point_in_triangle(point)) {
-            return point;
+        if (!is_inside || is_degenerate) {
+            // 3 edges
+            Eigen::Vector3f c1 = closest_point_to_segment(point, a, b);
+            Eigen::Vector3f c2 = closest_point_to_segment(point, b, c);
+            Eigen::Vector3f c3 = closest_point_to_segment(point, c, a);
+
+            float d1 = (point - c1).squaredNorm();
+            float d2 = (point - c2).squaredNorm();
+            float d3 = (point - c3).squaredNorm();
+
+            if (d1 <= d2 && d1 <= d3) return c1;
+            if (d2 <= d3) return c2;
+            return c3;
         }
-
-        Eigen::Vector3f c1 = closest_point_to_line(a, b, point);
-        Eigen::Vector3f c2 = closest_point_to_line(b, c, point);
-        Eigen::Vector3f c3 = closest_point_to_line(c, a, point);
-
-        float mag1 = (point - c1).squaredNorm();
-        float mag2 = (point - c2).squaredNorm();
-        float mag3 = (point - c3).squaredNorm();
-
-        float min = std::min(mag1, mag2);
-        min = std::min(min, mag3);
-
-        if (min == mag1) {
-            return c1;
+        else {
+            // 1 face
+            float dist_factor = nor.dot(point - a) / nor_sq;
+            return point - nor * dist_factor;
         }
-        else if (min == mag2) {
-            return c2;
-        }
-        return c3;
     }
 
     __host__ __device__ Eigen::Vector3f barycentric(const Eigen::Vector3f& p) const {
